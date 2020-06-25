@@ -1,0 +1,4 @@
+rootProject.name='ML Kit'
+include ':app'
+include ':domain'
+include ':camera'

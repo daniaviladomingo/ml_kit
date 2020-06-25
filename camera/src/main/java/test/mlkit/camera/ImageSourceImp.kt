@@ -69,7 +69,7 @@ class ImageSourceImp(
             var previewHeight = 0
 
             customParameters.supportedPreviewSizes
-                .filter { it.width == 640 }
+                .filter { it.width == 720 }
                 .apply {
                     this.forEach {
                         val previewDiff = abs((it.width / it.height.toFloat()) - screenRatio)

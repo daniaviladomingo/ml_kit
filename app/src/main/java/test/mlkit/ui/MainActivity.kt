@@ -2,6 +2,7 @@ package test.mlkit.ui
 
 import android.Manifest
 import android.os.Bundle
+import android.util.Log
 import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private fun init() {
         setListener()
         vm.adjustPreview()
+        vm.readText()
     }
 
     private fun setListener() {
@@ -55,6 +57,10 @@ class MainActivity : AppCompatActivity() {
 
         vm.barcodeLiveData.observe(this, Observer { ratio ->
             surface_view_container.setRatio(ratio)
+        })
+
+        vm.textRecognitionLiveData.observe(this, Observer { text ->
+            Log.d("aaa", "Texto -> $text")
         })
     }
 

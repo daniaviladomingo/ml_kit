@@ -3,6 +3,7 @@
 package test.mlkit.camera
 
 import android.hardware.Camera
+import android.util.Log
 import android.view.Display
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -69,7 +70,7 @@ class ImageSourceImp(
             var previewHeight = 0
 
             customParameters.supportedPreviewSizes
-                .filter { it.width == 720 }
+                .filter { it.width in 1001..1299 }
                 .apply {
                     this.forEach {
                         val previewDiff = abs((it.width / it.height.toFloat()) - screenRatio)

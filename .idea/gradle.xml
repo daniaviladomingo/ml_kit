@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/camera" />
             <option value="$PROJECT_DIR$/domain" />
+            <option value="$PROJECT_DIR$/manager" />
             <option value="$PROJECT_DIR$/ml" />
           </set>
         </option>

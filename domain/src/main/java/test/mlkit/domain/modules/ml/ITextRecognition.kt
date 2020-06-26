@@ -1,4 +1,4 @@
-package test.mlkit.domain.modules
+package test.mlkit.domain.modules.ml
 
 import io.reactivex.Single
 import test.mlkit.domain.model.Image

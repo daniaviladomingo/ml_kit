@@ -6,7 +6,7 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import test.mlkit.di.*
 
-class AppApplication: Application() {
+class AppApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         startKoin {
@@ -17,6 +17,8 @@ class AppApplication: Application() {
                 activityModule,
                 viewModelModule,
                 useCasesModules,
+                mlModule,
+                managerModule,
                 scheduleModule,
                 imageSourceModule
             )

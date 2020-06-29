@@ -20,7 +20,9 @@ class AppApplication : Application() {
                 mlModule,
                 managerModule,
                 scheduleModule,
-                imageSourceModule
+                imageSourceModule,
+                imageTransformModule,
+                mapperModule
             )
         }
     }

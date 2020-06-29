@@ -2,8 +2,10 @@
 
 package test.mlkit.camera
 
+import android.graphics.ImageFormat
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.hardware.Camera
-import android.util.Log
 import android.view.Display
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -13,6 +15,7 @@ import test.mlkit.domain.model.Image
 import test.mlkit.domain.modules.IImageRatio
 import test.mlkit.domain.modules.IImageSource
 import test.mlkit.domain.modules.ILifecycleObserver
+import java.io.ByteArrayOutputStream
 import kotlin.math.abs
 
 class ImageSourceImp(
@@ -44,12 +47,19 @@ class ImageSourceImp(
     override fun getImage(): Single<Image> = Single.create {
         camera.setOneShotPreviewCallback { data, camera ->
             val previewSize = camera.parameters.previewSize
+
+            val yuv = YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null)
+            val out = ByteArrayOutputStream()
+
+            yuv.compressToJpeg(Rect(0, 0, previewSize.width, previewSize.height), 100, out)
+
             val previewImage = Image(
-                data,
+                out.toByteArray(),
                 previewSize.width,
                 previewSize.height,
                 rotationDegreesImage()
             )
+
             it.onSuccess(previewImage)
         }
     }

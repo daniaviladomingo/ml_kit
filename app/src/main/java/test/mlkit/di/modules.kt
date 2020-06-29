@@ -1,6 +1,7 @@
 package test.mlkit.di
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Point
 import android.view.Display
 import android.view.SurfaceView
@@ -18,17 +19,22 @@ import test.mlkit.di.qualifier.QCamera
 import test.mlkit.di.qualifier.QTextRecognition
 import test.mlkit.domain.interactor.GetImageRatioUseCase
 import test.mlkit.domain.interactor.TextRecognitionUseCase
+import test.mlkit.domain.model.Image
 import test.mlkit.domain.model.Size
+import test.mlkit.domain.model.mapper.Mapper
 import test.mlkit.domain.modules.IImageRatio
 import test.mlkit.domain.modules.IImageSource
+import test.mlkit.domain.modules.IImageVisible
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.manager.ITextRecognitionManager
 import test.mlkit.domain.modules.ml.ITextRecognition
+import test.mlkit.image_transform.ImageVisibleImp
 import test.mlkit.manager.TextRecognitionManager
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.schedulers.ScheduleProviderImp
 import test.mlkit.ui.ViewModel
 import test.mlkitl.ml.TextRecognitionImp
+import test.mlkitl.ml.model.mapper.BitmapMapper
 import java.util.concurrent.TimeUnit
 
 val appModule = module {
@@ -77,14 +83,20 @@ val useCasesModules = module {
 }
 
 val mlModule = module {
-    single<ITextRecognition> { TextRecognitionImp(get()) }
+    single<ITextRecognition> { TextRecognitionImp(get(), get()) }
     single { TextRecognition.getClient() }
 }
 
 val managerModule = module {
     single(QTextRecognition) {
-        TextRecognitionManager(get(QCamera), get(), get(), get())
+        TextRecognitionManager(get(QCamera), get(), get(), get(), get())
     } binds arrayOf(ITextRecognitionManager::class, ILifecycleObserver::class)
+}
+
+val imageTransformModule = module {
+    single<IImageVisible> {
+        ImageVisibleImp(get())
+    }
 }
 
 val imageSourceModule = module {
@@ -108,5 +120,11 @@ val imageSourceModule = module {
 
 val scheduleModule = module {
     factory<IScheduleProvider> { ScheduleProviderImp() }
+}
+
+val mapperModule = module {
+    single<Mapper<Image, Bitmap>> {
+        BitmapMapper()
+    }
 }
 

@@ -2,6 +2,7 @@ package test.mlkit.manager
 
 import io.reactivex.Observable
 import test.mlkit.domain.modules.IImageSource
+import test.mlkit.domain.modules.IImageVisible
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.manager.ITextRecognitionManager
 import test.mlkit.domain.modules.ml.ITextRecognition
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit
 class TextRecognitionManager(
     private val imageSource: IImageSource,
     private val textRecognition: ITextRecognition,
+    private val imageVisible: IImageVisible,
     private val period: Long,
     private val timeUnit: TimeUnit
 ) : ITextRecognitionManager, ILifecycleObserver {
@@ -19,8 +21,10 @@ class TextRecognitionManager(
         .interval(period, timeUnit)
         .filter { resume }
         .flatMap {
-            imageSource.getImage().toObservable().flatMap {
-                textRecognition.extractText(it).toObservable()
+            imageSource.getImage().toObservable().flatMap { image ->
+                imageVisible.visible(image).toObservable().flatMap { visibleImage ->
+                    textRecognition.extractText(visibleImage).toObservable()
+                }
             }
         }
 

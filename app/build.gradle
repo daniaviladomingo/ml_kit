@@ -50,5 +50,7 @@ dependencies {
     // ML-KIT
     // Text
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.0.0'
+    // Face
+    implementation 'com.google.android.gms:play-services-mlkit-face-detection:16.0.0'
 }
 

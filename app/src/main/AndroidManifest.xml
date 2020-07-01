@@ -20,9 +20,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+<!--        <meta-data-->
+<!--            android:name="com.google.mlkit.vision.DEPENDENCIES"-->
+<!--            android:value="ocr,face" />-->
+<!--        &lt;!&ndash; To use multiple models: android:value="face,model2,model3" &ndash;&gt;-->
+
         <activity
-            android:screenOrientation="landscape"
             android:name=".ui.MainActivity"
+            android:screenOrientation="landscape"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

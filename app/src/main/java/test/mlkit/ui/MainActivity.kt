@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity() {
     private fun init() {
         setListener()
         vm.adjustPreview()
-        vm.readText()
+//        vm.readText()
+        vm.faceDetection()
     }
 
     private fun setListener() {
@@ -55,12 +56,21 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
         })
 
-        vm.barcodeLiveData.observe(this, Observer { ratio ->
+        vm.ratioLiveData.observe(this, Observer { ratio ->
             surface_view_container.setRatio(ratio)
         })
 
         vm.textRecognitionLiveData.observe(this, Observer { text ->
             Log.d("aaa", "Texto -> $text")
+        })
+
+        vm.faceDetectionLiveData.observe(this, Observer { faces ->
+            faces.forEach {
+                Log.d(
+                    "aaa",
+                    "Smiling?: ${it.isSmiling}, Right Eyes Open?: ${it.isRightEyeOpen}, Left Eyes Open?: ${it.isLeftEyeOpen}"
+                )
+            }
         })
     }
 

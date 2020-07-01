@@ -1,2 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="test.mlkitl.ml" />
+    package="test.mlkitl.ml">
+
+    <application>
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr,face" />
+        <!-- To use multiple models: android:value="face,model2,model3" -->
+    </application>
+</manifest>

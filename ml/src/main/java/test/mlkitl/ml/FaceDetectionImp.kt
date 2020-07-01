@@ -22,19 +22,10 @@ class FaceDetectionImp(
                     FaceData(
                         it.smilingProbability?.run { this > smilingThreshold } ?: false,
                         it.rightEyeOpenProbability?.run { this > smilingThreshold } ?: false,
-                        it.leftEyeOpenProbability?.run { this > smilingThreshold } ?: false,
+                        it.leftEyeOpenProbability?.run { this > smilingThreshold } ?: false
                     )
                 }
             )
         }
     }
-
-//    init {
-//        faceDetector.process(InputImage.fromBitmap()).addOnSuccessListener { faces ->
-//            faces.forEach {
-//                it.
-//            }
-//        }
-//
-//    }
 }

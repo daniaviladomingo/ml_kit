@@ -1,8 +1,9 @@
 package test.mlkit.di
 
 import android.content.Context
-import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Point
+import android.util.Log
 import android.view.Display
 import android.view.SurfaceView
 import android.view.ViewGroup
@@ -21,33 +22,50 @@ import test.mlkit.di.qualifier.QCamera
 import test.mlkit.di.qualifier.QMLManager
 import test.mlkit.domain.interactor.FaceDetectionUseCase
 import test.mlkit.domain.interactor.GetImageRatioUseCase
+import test.mlkit.domain.interactor.SetupCompletedUseCase
 import test.mlkit.domain.interactor.TextRecognitionUseCase
-import test.mlkit.domain.model.Image
 import test.mlkit.domain.model.Size
-import test.mlkit.domain.model.mapper.Mapper
-import test.mlkit.domain.modules.IImageRatio
 import test.mlkit.domain.modules.IImageSource
-import test.mlkit.domain.modules.IImageVisible
+import test.mlkit.domain.modules.IImageSourceSetupCompleted
 import test.mlkit.domain.modules.ILifecycleObserver
+import test.mlkit.domain.modules.debug.PreviewImageListener
 import test.mlkit.domain.modules.manager.IMLManager
 import test.mlkit.domain.modules.ml.IFaceDetection
 import test.mlkit.domain.modules.ml.ITextRecognition
-import test.mlkit.image_transform.ImageVisibleImp
 import test.mlkit.manager.MLManagerImp
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.schedulers.ScheduleProviderImp
 import test.mlkit.ui.ViewModel
+import test.mlkit.ui.model.mapper.HighLightMapper
+import test.mlkit.ui.model.mapper.PointsMapper
 import test.mlkitl.ml.FaceDetectionImp
 import test.mlkitl.ml.TextRecognitionImp
 import test.mlkitl.ml.model.mapper.BitmapMapper
 import java.util.concurrent.TimeUnit
 
+lateinit var previewImageListener: PreviewImageListener
+
+lateinit var imageSize: Size
+lateinit var imageSizeVisible: Size
+
+val getImageSize: () -> Size = {
+    imageSize
+}
+
+val getVisibleImageSize: () -> Size = {
+    imageSizeVisible
+}
+
+val getPreviewImageListener: () -> PreviewImageListener = {
+    previewImageListener
+}
+
 val appModule = module {
     single { (androidContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay }
 
     single {
-        val point = Point()
-        (get() as Display).getSize(point)
+        val screenSize = Point()
+        (get() as Display).getSize(screenSize)
         val heightNavigationBar = androidContext().resources.getDimensionPixelSize(
             androidContext().applicationContext.resources.getIdentifier(
                 "navigation_bar_height",
@@ -56,34 +74,38 @@ val appModule = module {
             )
         )
 
-        Point().apply { (get() as Display).getRealSize(this) }
-            .let { point ->
-                if (false) {
-                    Size(point.x, point.y - heightNavigationBar)
-                } else {
-                    Size(point.x - heightNavigationBar, point.y)
-                }
-            }
+        val screenRealSize = Point()
+        (get() as Display).getRealSize(screenRealSize)
+
+        val lossDimension =
+            (screenRealSize.x) - (screenSize.x) - heightNavigationBar
+
+        Size(
+            screenRealSize.x - lossDimension,
+            screenRealSize.y
+        )
     }
 
     single { TimeUnit.MILLISECONDS }
 
-    single { 500L }
+    single { 250L }
 }
 
 val activityModule = module {
-    factory { (lifecycle: Lifecycle) ->
+    factory { (lifecycle: Lifecycle, PrIListener: PreviewImageListener) ->
         LifecycleManager(arrayOf(get(QCamera), get(QMLManager)), lifecycle)
+        previewImageListener = PrIListener
         Unit
     }
 }
 
 val viewModelModule = module {
-    viewModel { ViewModel(get(), get(), get(), get()) }
+    viewModel { ViewModel(get(), get(), get(), get(), get(), get()) }
 }
 
 val useCasesModules = module {
-    single { GetImageRatioUseCase(get(QCamera)) }
+    single { SetupCompletedUseCase(get(QCamera)) }
+    single { GetImageRatioUseCase(getImageSize) }
     single { TextRecognitionUseCase(get(QMLManager)) }
     single { FaceDetectionUseCase(get(QMLManager)) }
 }
@@ -107,15 +129,15 @@ val mlModule = module {
 
 val managerModule = module {
     single(QMLManager) {
-        MLManagerImp(get(QCamera), get(), get(), get(), get(), get())
+        MLManagerImp(get(QCamera), get(), get(), get(), get())
     } binds arrayOf(IMLManager::class, ILifecycleObserver::class)
 }
 
-val imageTransformModule = module {
-    single<IImageVisible> {
-        ImageVisibleImp(get())
-    }
-}
+//val imageTransformModule = module {
+//    single<IImageVisible> {
+//        ImageVisibleImp(get())
+//    }
+//}
 
 val imageSourceModule = module {
     single {
@@ -131,9 +153,24 @@ val imageSourceModule = module {
         ImageSourceImp(
             get(),
             get(),
-            (get() as Size).ratio()
+            get(),
+            {
+                imageSize = it
+            }, {
+                imageSizeVisible = it
+            },
+            true,
+            getPreviewImageListener
         )
-    } binds arrayOf(IImageSource::class, IImageRatio::class, ILifecycleObserver::class)
+    } binds arrayOf(
+        IImageSource::class,
+        IImageSourceSetupCompleted::class,
+        ILifecycleObserver::class
+    )
+//
+//    single<IImageSizeVisible> {
+//        ImageSizeVisibleImp(getImageSize, get())
+//    }
 }
 
 val scheduleModule = module {
@@ -141,8 +178,23 @@ val scheduleModule = module {
 }
 
 val mapperModule = module {
-    single<Mapper<Image, Bitmap>> {
-        BitmapMapper()
+    single {
+        BitmapMapper(getVisibleImageSize)
+    }
+
+    single {
+        HighLightMapper(
+            get(),
+            getVisibleImageSize,
+            Color.BLUE,
+            Color.GREEN,
+            Color.RED,
+            get()
+        )
+    }
+
+    single {
+        PointsMapper()
     }
 }
 

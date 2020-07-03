@@ -3,7 +3,6 @@ package test.mlkit.manager
 import io.reactivex.Observable
 import test.mlkit.domain.model.face.FaceData
 import test.mlkit.domain.modules.IImageSource
-import test.mlkit.domain.modules.IImageVisible
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.manager.IMLManager
 import test.mlkit.domain.modules.ml.IFaceDetection
@@ -14,7 +13,7 @@ class MLManagerImp(
     private val imageSource: IImageSource,
     private val textRecognition: ITextRecognition,
     private val faceDetection: IFaceDetection,
-    private val imageVisible: IImageVisible,
+//    private val imageVisible: IImageVisible,
     private val period: Long,
     private val timeUnit: TimeUnit
 ) : IMLManager, ILifecycleObserver {
@@ -23,25 +22,20 @@ class MLManagerImp(
     override fun recognizedText(): Observable<String> = period()
         .flatMap {
             imageSource.getImage().toObservable().flatMap { image ->
-                imageVisible.visible(image).toObservable().flatMap { visibleImage ->
-                    textRecognition.extractText(visibleImage).toObservable()
-                }
+                textRecognition.extractText(image).toObservable()
             }
         }
 
     override fun faceDetection(): Observable<List<FaceData>> = period()
         .flatMap {
             imageSource.getImage().toObservable().flatMap { image ->
-                imageVisible.visible(image).toObservable().flatMap { visibleImage ->
-                    faceDetection.detection(visibleImage).toObservable()
-                }
+                faceDetection.detection(image).toObservable()
             }
         }
 
     private fun period(): Observable<Long> = Observable
         .interval(period, timeUnit)
         .filter { resume }
-
 
     override fun create() {}
 

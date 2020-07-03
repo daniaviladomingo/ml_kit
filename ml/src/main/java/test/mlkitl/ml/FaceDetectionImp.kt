@@ -1,28 +1,51 @@
 package test.mlkitl.ml
 
-import android.graphics.Bitmap
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceContour
 import com.google.mlkit.vision.face.FaceDetector
 import io.reactivex.Single
 import test.mlkit.domain.model.Image
+import test.mlkit.domain.model.Point
 import test.mlkit.domain.model.face.FaceData
-import test.mlkit.domain.model.mapper.Mapper
 import test.mlkit.domain.modules.ml.IFaceDetection
+import test.mlkitl.ml.model.mapper.BitmapMapper
 
 class FaceDetectionImp(
     private val faceDetector: FaceDetector,
-    private val bitmapMapper: Mapper<Image, Bitmap>,
-    private val smilingThreshold: Float
+    private val bitmapMapper: BitmapMapper,
+    private val classificationThreshold: Float
 ) : IFaceDetection {
     override fun detection(image: Image): Single<List<FaceData>> = Single.create { emitter ->
         val img = InputImage.fromBitmap(bitmapMapper.map(image), image.rotation)
         faceDetector.process(img).addOnSuccessListener { faces ->
             emitter.onSuccess(
-                faces.map {
+                faces.map { face ->
                     FaceData(
-                        it.smilingProbability?.run { this > smilingThreshold } ?: false,
-                        it.rightEyeOpenProbability?.run { this > smilingThreshold } ?: false,
-                        it.leftEyeOpenProbability?.run { this > smilingThreshold } ?: false
+                        face.smilingProbability?.run { this > classificationThreshold } ?: false,
+                        face.rightEyeOpenProbability?.run { this > classificationThreshold }
+                            ?: false,
+                        face.leftEyeOpenProbability?.run { this > classificationThreshold }
+                            ?: false,
+                        face.getContour(FaceContour.FACE)?.points?.map { p -> Point(p.x, p.y) },
+                        face.getContour(FaceContour.LEFT_EYE)?.points?.map { p -> Point(p.x, p.y) },
+                        face.getContour(FaceContour.RIGHT_EYE)?.points?.map { p ->
+                            Point(
+                                p.x,
+                                p.y
+                            )
+                        },
+                        face.getContour(FaceContour.UPPER_LIP_TOP)?.points?.map { p ->
+                            Point(
+                                p.x,
+                                p.y
+                            )
+                        },
+                        face.getContour(FaceContour.LOWER_LIP_BOTTOM)?.points?.map { p ->
+                            Point(
+                                p.x,
+                                p.y
+                            )
+                        }
                     )
                 }
             )

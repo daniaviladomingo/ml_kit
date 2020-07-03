@@ -14,17 +14,22 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import test.mlkit.R
+import test.mlkit.domain.model.Image
+import test.mlkit.domain.modules.debug.PreviewImageListener
 import test.mlkit.util.extension.isPermissionGranted
 import test.mlkit.util.extension.isPermissionsGranted
 import test.mlkit.util.extension.requestPermission
+import test.mlkitl.ml.model.mapper.BitmapMapper
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PreviewImageListener {
 
     private val surfaceView: SurfaceView by inject()
 
-    private val vm: ViewModel by viewModel()
+    private val lifecycleObserver: Unit by inject { parametersOf(this.lifecycle, this) }
 
-    private val lifecycleObserver: Unit by inject { parametersOf(this.lifecycle) }
+    private val bitmapMapper: BitmapMapper by inject()
+
+    private val vm: ViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,12 +69,13 @@ class MainActivity : AppCompatActivity() {
             Log.d("aaa", "Texto -> $text")
         })
 
-        vm.faceDetectionLiveData.observe(this, Observer { faces ->
-            faces.forEach {
-                Log.d(
-                    "aaa",
-                    "Smiling?: ${it.isSmiling}, Right Eyes Open?: ${it.isRightEyeOpen}, Left Eyes Open?: ${it.isLeftEyeOpen}"
-                )
+        vm.faceDetectionLiveData.observe(this, Observer { highLightsFace ->
+            if (highLightsFace.isEmpty()) {
+                view_highLights.clearHighLight()
+            } else {
+                highLightsFace.forEach { faceHighLight ->
+                    view_highLights.drawHighLight(faceHighLight)
+                }
             }
         })
     }
@@ -98,6 +104,13 @@ class MainActivity : AppCompatActivity() {
                     finish()
                 }
             }
+        }
+    }
+
+    override fun onPreviewImage(image: Image) {
+        val bitmap = bitmapMapper.map(image)
+        runOnUiThread {
+            preview_image.setImageBitmap(bitmap)
         }
     }
 }

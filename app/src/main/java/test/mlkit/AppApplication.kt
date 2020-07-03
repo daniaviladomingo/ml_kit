@@ -21,7 +21,7 @@ class AppApplication : Application() {
                 managerModule,
                 scheduleModule,
                 imageSourceModule,
-                imageTransformModule,
+//                imageTransformModule,
                 mapperModule
             )
         }

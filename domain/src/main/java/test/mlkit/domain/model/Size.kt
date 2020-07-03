@@ -6,5 +6,6 @@ data class Size(
 ) {
     fun ratio(): Float = width / height.toFloat()
 
+
     override fun toString(): String = "$width x $height"
 }

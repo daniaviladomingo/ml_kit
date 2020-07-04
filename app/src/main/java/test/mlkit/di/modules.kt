@@ -3,7 +3,6 @@ package test.mlkit.di
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Point
-import android.util.Log
 import android.view.Display
 import android.view.SurfaceView
 import android.view.ViewGroup
@@ -22,11 +21,9 @@ import test.mlkit.di.qualifier.QCamera
 import test.mlkit.di.qualifier.QMLManager
 import test.mlkit.domain.interactor.FaceDetectionUseCase
 import test.mlkit.domain.interactor.GetImageRatioUseCase
-import test.mlkit.domain.interactor.SetupCompletedUseCase
 import test.mlkit.domain.interactor.TextRecognitionUseCase
 import test.mlkit.domain.model.Size
 import test.mlkit.domain.modules.IImageSource
-import test.mlkit.domain.modules.IImageSourceSetupCompleted
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.debug.PreviewImageListener
 import test.mlkit.domain.modules.manager.IMLManager
@@ -40,20 +37,14 @@ import test.mlkit.ui.model.mapper.HighLightMapper
 import test.mlkit.ui.model.mapper.PointsMapper
 import test.mlkitl.ml.FaceDetectionImp
 import test.mlkitl.ml.TextRecognitionImp
-import test.mlkitl.ml.model.mapper.BitmapMapper
 import java.util.concurrent.TimeUnit
 
 lateinit var previewImageListener: PreviewImageListener
 
 lateinit var imageSize: Size
-lateinit var imageSizeVisible: Size
 
 val getImageSize: () -> Size = {
     imageSize
-}
-
-val getVisibleImageSize: () -> Size = {
-    imageSizeVisible
 }
 
 val getPreviewImageListener: () -> PreviewImageListener = {
@@ -88,7 +79,7 @@ val appModule = module {
 
     single { TimeUnit.MILLISECONDS }
 
-    single { 250L }
+    single { 200L }
 }
 
 val activityModule = module {
@@ -100,19 +91,18 @@ val activityModule = module {
 }
 
 val viewModelModule = module {
-    viewModel { ViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ViewModel(get(), get(), get(), get(), get()) }
 }
 
 val useCasesModules = module {
-    single { SetupCompletedUseCase(get(QCamera)) }
-    single { GetImageRatioUseCase(getImageSize) }
+    single { GetImageRatioUseCase(get(QCamera)) }
     single { TextRecognitionUseCase(get(QMLManager)) }
     single { FaceDetectionUseCase(get(QMLManager)) }
 }
 
 val mlModule = module {
-    single<ITextRecognition> { TextRecognitionImp(get(), get()) }
-    single<IFaceDetection> { FaceDetectionImp(get(), get(), 0.7f) }
+    single<ITextRecognition> { TextRecognitionImp(get()) }
+    single<IFaceDetection> { FaceDetectionImp(get(), 0.7f) }
 
     single { TextRecognition.getClient() }
     single { FaceDetection.getClient(get()); }
@@ -156,15 +146,12 @@ val imageSourceModule = module {
             get(),
             {
                 imageSize = it
-            }, {
-                imageSizeVisible = it
             },
             true,
             getPreviewImageListener
         )
     } binds arrayOf(
         IImageSource::class,
-        IImageSourceSetupCompleted::class,
         ILifecycleObserver::class
     )
 //
@@ -179,13 +166,9 @@ val scheduleModule = module {
 
 val mapperModule = module {
     single {
-        BitmapMapper(getVisibleImageSize)
-    }
-
-    single {
         HighLightMapper(
             get(),
-            getVisibleImageSize,
+            getImageSize,
             Color.BLUE,
             Color.GREEN,
             Color.RED,

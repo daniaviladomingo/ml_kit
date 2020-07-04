@@ -2,7 +2,6 @@ package test.mlkit.ui
 
 import test.mlkit.domain.interactor.FaceDetectionUseCase
 import test.mlkit.domain.interactor.GetImageRatioUseCase
-import test.mlkit.domain.interactor.SetupCompletedUseCase
 import test.mlkit.domain.interactor.TextRecognitionUseCase
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.ui.model.HighLight
@@ -11,7 +10,6 @@ import test.mlkit.util.BaseViewModel
 import test.mlkit.util.SingleLiveEvent
 
 class ViewModel(
-    private val setupCompletedUseCase: SetupCompletedUseCase,
     private val getImageRatioUseCase: GetImageRatioUseCase,
     private val textRecognitionUseCase: TextRecognitionUseCase,
     private val faceDetectionUseCase: FaceDetectionUseCase,
@@ -26,21 +24,6 @@ class ViewModel(
     val faceDetectionLiveData = SingleLiveEvent<List<List<HighLight>>>()
 
     fun adjustPreview() {
-        addDisposable(setupCompletedUseCase.execute()
-            .observeOn(scheduleProvider.io())
-            .subscribe({
-                addDisposable(getImageRatioUseCase.execute()
-                    .observeOn(scheduleProvider.ui())
-                    .subscribeOn(scheduleProvider.computation())
-                    .subscribe({ ratio ->
-                        ratioLiveData.value = ratio
-                    }) {
-                        errorLiveData.value = it.toString()
-                    })
-            }) {
-                errorLiveData.value = it.toString()
-            }
-        )
         addDisposable(getImageRatioUseCase.execute()
             .observeOn(scheduleProvider.ui())
             .subscribeOn(scheduleProvider.computation())
@@ -49,6 +32,7 @@ class ViewModel(
             }) {
                 errorLiveData.value = it.toString()
             })
+
     }
 
     fun readText() {

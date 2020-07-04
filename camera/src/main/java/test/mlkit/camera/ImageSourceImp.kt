@@ -2,23 +2,17 @@
 
 package test.mlkit.camera
 
-import android.graphics.ImageFormat
-import android.graphics.Rect
-import android.graphics.YuvImage
 import android.hardware.Camera
 import android.view.Display
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import io.reactivex.Completable
 import io.reactivex.Single
 import test.mlkit.domain.model.Image
 import test.mlkit.domain.model.Size
 import test.mlkit.domain.modules.IImageSource
-import test.mlkit.domain.modules.IImageSourceSetupCompleted
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.debug.PreviewImageListener
-import java.io.ByteArrayOutputStream
 import kotlin.math.abs
 
 class ImageSourceImp(
@@ -26,14 +20,13 @@ class ImageSourceImp(
     private val display: Display,
     private val screenSize: Size,
     private val imageSize: (Size) -> Unit,
-    private val visibleImageSize: (Size) -> Unit,
     private val portrait: Boolean,
     private val previewImageListener: () -> PreviewImageListener
-) : IImageSource, IImageSourceSetupCompleted, ILifecycleObserver {
+) : IImageSource, ILifecycleObserver {
 
     private lateinit var camera: Camera
 
-    private lateinit var rxSetupCompleted: () -> Unit
+    private lateinit var imageRatio: (Float) -> Unit
 
     private val surfaceHolderCallback = object : SurfaceHolder.Callback {
         override fun surfaceChanged(
@@ -55,13 +48,13 @@ class ImageSourceImp(
         camera.setOneShotPreviewCallback { data, camera ->
             val previewSize = camera.parameters.previewSize
 
-            val yuv = YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null)
-            val out = ByteArrayOutputStream()
-
-            yuv.compressToJpeg(Rect(0, 0, previewSize.width, previewSize.height), 100, out)
+//            val yuv = YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null)
+//            val out = ByteArrayOutputStream()
+//
+//            yuv.compressToJpeg(Rect(0, 0, previewSize.width, previewSize.height), 100, out)
 
             val previewImage = Image(
-                out.toByteArray(),
+                data,
                 previewSize.width,
                 previewSize.height,
                 rotationDegreesImage()
@@ -73,9 +66,9 @@ class ImageSourceImp(
         }
     }
 
-    override fun setupCompleted(): Completable = Completable.create {
-        rxSetupCompleted = {
-            it.onComplete()
+    override fun ratio(): Single<Float> = Single.create {
+        imageRatio = { ratio ->
+            it.onSuccess(ratio)
         }
     }
 
@@ -116,12 +109,16 @@ class ImageSourceImp(
                 }
 
             customParameters.previewSize.run {
-                val imageSize = if(portrait) test.mlkit.domain.model.Size(height, width) else test.mlkit.domain.model.Size(width, height)
+                val imageSize = if (portrait) test.mlkit.domain.model.Size(
+                    height,
+                    width
+                ) else test.mlkit.domain.model.Size(width, height)
                 imageSize(imageSize)
-                visibleImageSize(calculateImageVisibleSize(imageSize))
             }
 
-            rxSetupCompleted()
+            imageRatio(customParameters.previewSize.run {
+                height / width.toFloat()
+            })
 
             if (parameters.isVideoStabilizationSupported) {
                 customParameters.videoStabilization = true
@@ -177,28 +174,31 @@ class ImageSourceImp(
         else -> 0
     }
 
-    private fun calculateImageVisibleSize(imageSize: Size): Size {
-        val ratioImage = imageSize.ratio()
-        val ratioScreen = screenSize.ratio()
-
-        val visibleWidth =
-            if (ratioImage > ratioScreen) {
-                val widthScaled: Float = screenSize.height * ratioImage
-                (imageSize.width / (widthScaled / screenSize.width)).toInt()
-            } else {
-                imageSize.width
-            }
-
-        val visibleHeight =
-            if (ratioImage < ratioScreen) {
-                val heightScaled: Float = screenSize.width / ratioImage
-                (imageSize.height / (heightScaled / screenSize.height)).toInt()
-            } else {
-                imageSize.height
-            }
-
-        return if(portrait) Size(visibleHeight, visibleWidth) else Size(visibleWidth, visibleHeight)
-    }
+//    private fun calculateImageVisibleSize(imageSize: Size): Size {
+//        val ratioImage = imageSize.ratio()
+//        val ratioScreen = screenSize.ratio()
+//
+//        val visibleWidth =
+//            if (ratioImage > ratioScreen) {
+//                val widthScaled: Float = screenSize.height * ratioImage
+//                (imageSize.width / (widthScaled / screenSize.width)).toInt()
+//            } else {
+//                imageSize.width
+//            }
+//
+//        val visibleHeight =
+//            if (ratioImage < ratioScreen) {
+//                val heightScaled: Float = screenSize.width / ratioImage
+//                (imageSize.height / (heightScaled / screenSize.height)).toInt()
+//            } else {
+//                imageSize.height
+//            }
+//
+//        return if (portrait) Size(visibleHeight, visibleWidth) else Size(
+//            visibleWidth,
+//            visibleHeight
+//        )
+//    }
 
     override fun create() {
         configureCamera()

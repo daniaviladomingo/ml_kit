@@ -19,15 +19,12 @@ import test.mlkit.domain.modules.debug.PreviewImageListener
 import test.mlkit.util.extension.isPermissionGranted
 import test.mlkit.util.extension.isPermissionsGranted
 import test.mlkit.util.extension.requestPermission
-import test.mlkitl.ml.model.mapper.BitmapMapper
 
 class MainActivity : AppCompatActivity(), PreviewImageListener {
 
     private val surfaceView: SurfaceView by inject()
 
     private val lifecycleObserver: Unit by inject { parametersOf(this.lifecycle, this) }
-
-    private val bitmapMapper: BitmapMapper by inject()
 
     private val vm: ViewModel by viewModel()
 
@@ -108,9 +105,9 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
     }
 
     override fun onPreviewImage(image: Image) {
-        val bitmap = bitmapMapper.map(image)
-        runOnUiThread {
-            preview_image.setImageBitmap(bitmap)
-        }
+//        val bitmap = bitmapMapper.map(image)
+//        runOnUiThread {
+//            preview_image.setImageBitmap(bitmap)
+//        }
     }
 }

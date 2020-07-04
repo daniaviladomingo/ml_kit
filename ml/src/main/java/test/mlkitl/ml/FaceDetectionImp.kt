@@ -8,15 +8,13 @@ import test.mlkit.domain.model.Image
 import test.mlkit.domain.model.Point
 import test.mlkit.domain.model.face.FaceData
 import test.mlkit.domain.modules.ml.IFaceDetection
-import test.mlkitl.ml.model.mapper.BitmapMapper
 
 class FaceDetectionImp(
     private val faceDetector: FaceDetector,
-    private val bitmapMapper: BitmapMapper,
     private val classificationThreshold: Float
 ) : IFaceDetection {
     override fun detection(image: Image): Single<List<FaceData>> = Single.create { emitter ->
-        val img = InputImage.fromBitmap(bitmapMapper.map(image), image.rotation)
+        val img = InputImage.fromByteArray(image.data, image.width, image.height, image.rotation, InputImage.IMAGE_FORMAT_NV21)
         faceDetector.process(img).addOnSuccessListener { faces ->
             emitter.onSuccess(
                 faces.map { face ->

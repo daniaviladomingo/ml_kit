@@ -8,7 +8,7 @@ import test.mlkit.ui.model.HighLight
 
 class HighLightMapper(
     private val screenSize: Size,
-    private val imageSize: () -> Size,
+    private val imageSize: ()->Size,
     private val color: Int,
     private val colorTrue: Int,
     private val colorFalse: Int,
@@ -16,13 +16,13 @@ class HighLightMapper(
 ) : Mapper<FaceData, List<HighLight>>() {
     override fun map(model: FaceData): List<HighLight> = model.run {
         val scale = if (imageSize().width < screenSize.width) {
-            screenSize.ratio()
-        } else {
             1 / screenSize.ratio()
+        } else {
+            screenSize.ratio()
         }
 
-        Log.d("aaa", "Screen size: ${screenSize}")
-        Log.d("aaa", "Image size: ${imageSize()}")
+        Log.d("aaa", "Screen size: $screenSize")
+        Log.d("aaa", "Image size: $imageSize")
         Log.d("aaa", "Screen ratio: ${screenSize.ratio()}")
         Log.d("aaa", "Image ratio: ${imageSize().ratio()}")
 

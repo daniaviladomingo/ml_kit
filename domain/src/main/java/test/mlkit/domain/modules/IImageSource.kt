@@ -5,5 +5,6 @@ import test.mlkit.domain.model.Image
 
 interface IImageSource {
     fun getImage(): Single<Image>
+    fun switchFacing()
     fun ratio(): Single<Float>
 }

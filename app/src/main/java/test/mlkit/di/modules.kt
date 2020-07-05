@@ -16,13 +16,16 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.binds
 import org.koin.dsl.module
 import test.mlkit.LifecycleManager
+import test.mlkit.camera.ImageResolutionImp
 import test.mlkit.camera.ImageSourceImp
 import test.mlkit.di.qualifier.QCamera
 import test.mlkit.di.qualifier.QMLManager
 import test.mlkit.domain.interactor.FaceDetectionUseCase
 import test.mlkit.domain.interactor.GetImageRatioUseCase
 import test.mlkit.domain.interactor.TextRecognitionUseCase
+import test.mlkit.domain.model.CameraFacing
 import test.mlkit.domain.model.Size
+import test.mlkit.domain.modules.ICameraResolution
 import test.mlkit.domain.modules.IImageSource
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.debug.PreviewImageListener
@@ -33,19 +36,22 @@ import test.mlkit.manager.MLManagerImp
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.schedulers.ScheduleProviderImp
 import test.mlkit.ui.ViewModel
+import test.mlkit.ui.model.mapper.BitmapMapper
 import test.mlkit.ui.model.mapper.HighLightMapper
 import test.mlkit.ui.model.mapper.PointsMapper
 import test.mlkitl.ml.FaceDetectionImp
 import test.mlkitl.ml.TextRecognitionImp
 import java.util.concurrent.TimeUnit
 
-lateinit var previewImageListener: PreviewImageListener
+const val isPortrait = true
 
 lateinit var imageSize: Size
 
 val getImageSize: () -> Size = {
     imageSize
 }
+
+lateinit var previewImageListener: PreviewImageListener
 
 val getPreviewImageListener: () -> PreviewImageListener = {
     previewImageListener
@@ -123,12 +129,6 @@ val managerModule = module {
     } binds arrayOf(IMLManager::class, ILifecycleObserver::class)
 }
 
-//val imageTransformModule = module {
-//    single<IImageVisible> {
-//        ImageVisibleImp(get())
-//    }
-//}
-
 val imageSourceModule = module {
     single {
         SurfaceView(androidContext()).apply {
@@ -141,23 +141,29 @@ val imageSourceModule = module {
 
     single(QCamera) {
         ImageSourceImp(
+            isPortrait,
             get(),
             get(),
             get(),
             {
                 imageSize = it
             },
-            true,
-            getPreviewImageListener
+            getPreviewImageListener,
+            CameraFacing.BACK
         )
     } binds arrayOf(
         IImageSource::class,
         ILifecycleObserver::class
     )
-//
-//    single<IImageSizeVisible> {
-//        ImageSizeVisibleImp(getImageSize, get())
-//    }
+
+    single<ICameraResolution> {
+        ImageResolutionImp(
+            720,
+            900,
+            get(),
+            isPortrait
+        )
+    }
 }
 
 val scheduleModule = module {
@@ -178,6 +184,10 @@ val mapperModule = module {
 
     single {
         PointsMapper()
+    }
+
+    single {
+        BitmapMapper()
     }
 }
 

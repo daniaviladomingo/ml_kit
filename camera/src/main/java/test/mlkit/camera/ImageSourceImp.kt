@@ -8,25 +8,32 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import io.reactivex.Single
+import test.mlkit.domain.model.CameraFacing
 import test.mlkit.domain.model.Image
 import test.mlkit.domain.model.Size
+import test.mlkit.domain.modules.ICameraResolution
 import test.mlkit.domain.modules.IImageSource
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.debug.PreviewImageListener
-import kotlin.math.abs
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ImageSourceImp(
+    private val isPortrait: Boolean,
     private val surfaceView: SurfaceView,
     private val display: Display,
-    private val screenSize: Size,
+    private val cameraResolution: ICameraResolution,
     private val imageSize: (Size) -> Unit,
-    private val portrait: Boolean,
-    private val previewImageListener: () -> PreviewImageListener
+    private val previewImageListener: () -> PreviewImageListener,
+    facing: CameraFacing
 ) : IImageSource, ILifecycleObserver {
+
+    private var currentFacing = facing
 
     private lateinit var camera: Camera
 
     private lateinit var imageRatio: (Float) -> Unit
+
+    private val switching = AtomicBoolean(false)
 
     private val surfaceHolderCallback = object : SurfaceHolder.Callback {
         override fun surfaceChanged(
@@ -45,76 +52,64 @@ class ImageSourceImp(
     }
 
     override fun getImage(): Single<Image> = Single.create {
-        camera.setOneShotPreviewCallback { data, camera ->
-            val previewSize = camera.parameters.previewSize
+        while (true) {
+            if (switching.compareAndSet(false, true)) {
+                camera.setOneShotPreviewCallback { data, camera ->
+                    val previewSize = camera.parameters.previewSize
 
-//            val yuv = YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null)
-//            val out = ByteArrayOutputStream()
-//
-//            yuv.compressToJpeg(Rect(0, 0, previewSize.width, previewSize.height), 100, out)
+                    switching.set(false)
 
-            val previewImage = Image(
-                data,
-                previewSize.width,
-                previewSize.height,
-                rotationDegreesImage()
-            )
+                    val previewImage = Image(
+                        data,
+                        previewSize.width,
+                        previewSize.height,
+                        rotationDegreesImage()
+                    )
 
-//            previewImageListener().onPreviewImage(previewImage)
+                    previewImageListener().onPreviewImage(previewImage)
 
-            it.onSuccess(previewImage)
+                    it.onSuccess(previewImage)
+                }
+                break
+            }
+        }
+    }
+
+    override fun switchFacing() {
+        while (true) {
+            if (switching.compareAndSet(false, true)) {
+                currentFacing = if (currentFacing == CameraFacing.FRONT) {
+                    CameraFacing.BACK
+                } else {
+                    CameraFacing.FRONT
+                }
+                configureCamera()
+                switching.set(false)
+                break
+            }
         }
     }
 
     override fun ratio(): Single<Float> = Single.create {
         imageRatio = { ratio ->
-            it.onSuccess(ratio)
+            it.onSuccess(if (isPortrait) ratio else 1 / ratio)
         }
     }
 
     private fun configureCamera() {
-        camera = Camera.open(getCameraIdBack())
-        camera.run {
+        camera = Camera.open(getCameraId(currentFacing)).apply {
             val customParameters = parameters
 
-            var diff = Float.MAX_VALUE
-            var previewWidth = 0
-            var previewHeight = 0
+            val resolution = cameraResolution.getResolution(currentFacing)
 
-            customParameters.supportedPreviewSizes
-                .filter { if (portrait) it.height in 721..899 else it.width in 1001..1299 }
-                .apply {
-                    this.forEach {
-                        val ratio =
-                            if (portrait) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
-                        val previewDiff = abs(ratio - screenSize.ratio())
-                        if (previewDiff < diff) {
-                            diff = previewDiff
-                            previewWidth = it.width
-                            previewHeight = it.height
-                        }
-                    }
-                }
-                .filter {
-                    val ratio =
-                        if (portrait) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
-                    screenSize.ratio() == ratio
-                }
-                .run {
-                    if (size > 0) {
-                        get(0).let { customParameters.setPreviewSize(it.width, it.height) }
-                    } else {
-                        customParameters.setPreviewSize(previewWidth, previewHeight)
-                    }
-                }
+            imageSize(
+                if (isPortrait) test.mlkit.domain.model.Size(
+                    resolution.height,
+                    resolution.width
+                ) else test.mlkit.domain.model.Size(resolution.width, resolution.height)
+            )
 
-            customParameters.previewSize.run {
-                val imageSize = if (portrait) test.mlkit.domain.model.Size(
-                    height,
-                    width
-                ) else test.mlkit.domain.model.Size(width, height)
-                imageSize(imageSize)
-            }
+            customParameters.setPreviewSize(resolution.width, resolution.height)
 
             imageRatio(customParameters.previewSize.run {
                 height / width.toFloat()
@@ -141,6 +136,8 @@ class ImageSourceImp(
         }
     }
 
+    /*
+
     private fun rotationDegreesSurface(): Int =
         (getCameraRotation() - displayRotationDegree() + 360) % 360
 
@@ -149,20 +146,32 @@ class ImageSourceImp(
         return ((getCameraRotation() + degrees) % 360)
     }
 
-    private fun getCameraIdBack(): Int {
-        for (id in 0 until Camera.getNumberOfCameras()) {
-            val cameraInfo = Camera.CameraInfo()
-            Camera.getCameraInfo(id, cameraInfo)
-            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                return id
-            }
+     */
+
+
+    private fun rotationDegreesSurface(): Int {
+        val degrees = displayRotationDegree()
+
+        return if (currentFacing == CameraFacing.FRONT) {
+            (360 - (getCameraRotation() + degrees) % 360) % 360
+        } else {
+            (getCameraRotation() - degrees + 360) % 360
         }
-        throw IllegalStateException("BACK camera not found")
+    }
+
+    private fun rotationDegreesImage(): Int {
+        var degrees = displayRotationDegree()
+
+        if (currentFacing == CameraFacing.BACK) {
+            degrees = 360 - degrees
+        }
+
+        return ((getCameraRotation() + degrees) % 360)
     }
 
     private fun getCameraRotation(): Int {
         val cameraInfo = Camera.CameraInfo()
-        Camera.getCameraInfo(getCameraIdBack(), cameraInfo)
+        Camera.getCameraInfo(getCameraId(currentFacing), cameraInfo)
         return cameraInfo.orientation
     }
 
@@ -172,6 +181,21 @@ class ImageSourceImp(
         Surface.ROTATION_180 -> 180
         Surface.ROTATION_270 -> 270
         else -> 0
+    }
+
+    private fun getCameraId(facing: CameraFacing): Int {
+        val f = when (facing) {
+            CameraFacing.FRONT -> Camera.CameraInfo.CAMERA_FACING_FRONT
+            CameraFacing.BACK -> Camera.CameraInfo.CAMERA_FACING_BACK
+        }
+        for (id in 0 until Camera.getNumberOfCameras()) {
+            val cameraInfo = Camera.CameraInfo()
+            Camera.getCameraInfo(id, cameraInfo)
+            if (cameraInfo.facing == f) {
+                return id
+            }
+        }
+        throw IllegalStateException("BACK camera not found")
     }
 
 //    private fun calculateImageVisibleSize(imageSize: Size): Size {

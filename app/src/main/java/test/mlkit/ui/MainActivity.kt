@@ -16,6 +16,7 @@ import org.koin.core.parameter.parametersOf
 import test.mlkit.R
 import test.mlkit.domain.model.Image
 import test.mlkit.domain.modules.debug.PreviewImageListener
+import test.mlkit.ui.model.mapper.BitmapMapper
 import test.mlkit.util.extension.isPermissionGranted
 import test.mlkit.util.extension.isPermissionsGranted
 import test.mlkit.util.extension.requestPermission
@@ -23,6 +24,8 @@ import test.mlkit.util.extension.requestPermission
 class MainActivity : AppCompatActivity(), PreviewImageListener {
 
     private val surfaceView: SurfaceView by inject()
+
+    private val bitmapMapper: BitmapMapper by inject()
 
     private val lifecycleObserver: Unit by inject { parametersOf(this.lifecycle, this) }
 
@@ -105,9 +108,9 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
     }
 
     override fun onPreviewImage(image: Image) {
-//        val bitmap = bitmapMapper.map(image)
-//        runOnUiThread {
-//            preview_image.setImageBitmap(bitmap)
-//        }
+        val bitmap = bitmapMapper.map(image)
+        runOnUiThread {
+            preview_image.setImageBitmap(bitmap)
+        }
     }
 }

@@ -16,12 +16,4 @@ class BarcodeScannerImp(
             it.onSuccess(barcode.map { it.rawValue ?: "" })
         }
     }
-//
-//    init {
-//        barcodeScanner.process().addOnSuccessListener {
-//            it.forEach {
-//                it.
-//            }
-//        }
-//    }
 }

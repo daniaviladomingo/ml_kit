@@ -1,54 +1,55 @@
 package test.mlkit.di
 
- import android.app.Activity
- import android.content.Context
- import android.graphics.Color
- import android.graphics.Point
- import android.view.Display
- import android.view.SurfaceView
- import android.view.ViewGroup
- import android.view.WindowManager
- import androidx.lifecycle.Lifecycle
- import com.google.mlkit.vision.barcode.Barcode
- import com.google.mlkit.vision.barcode.BarcodeScannerOptions
- import com.google.mlkit.vision.barcode.BarcodeScanning
- import com.google.mlkit.vision.face.FaceDetection
- import com.google.mlkit.vision.face.FaceDetectorOptions
- import com.google.mlkit.vision.text.TextRecognition
- import org.koin.android.ext.koin.androidContext
- import org.koin.androidx.viewmodel.dsl.viewModel
- import org.koin.dsl.binds
- import org.koin.dsl.module
- import test.mlkit.LifecycleManager
- import test.mlkit.SwitchOrientationImp
- import test.mlkit.camera.ImageResolutionImp
- import test.mlkit.camera.ImageSourceImp
- import test.mlkit.di.qualifier.QCamera
- import test.mlkit.di.qualifier.QMLManager
- import test.mlkit.di.qualifier.QOrientation
- import test.mlkit.domain.interactor.*
- import test.mlkit.domain.model.CameraFacing
- import test.mlkit.domain.model.Orientation
- import test.mlkit.domain.model.Size
- import test.mlkit.domain.modules.ICameraResolution
- import test.mlkit.domain.modules.IImageSource
- import test.mlkit.domain.modules.ILifecycleObserver
- import test.mlkit.domain.modules.debug.PreviewImageListener
- import test.mlkit.domain.modules.manager.IMLManager
- import test.mlkit.domain.modules.ml.IBarcodeScanner
- import test.mlkit.domain.modules.ml.IFaceDetection
- import test.mlkit.domain.modules.ml.ITextRecognition
- import test.mlkit.manager.MLManagerImp
- import test.mlkit.schedulers.IScheduleProvider
- import test.mlkit.schedulers.ScheduleProviderImp
- import test.mlkit.ui.ViewModel
- import test.mlkit.ui.model.mapper.BitmapMapper
- import test.mlkit.ui.model.mapper.HighLightMapper
- import test.mlkit.ui.model.mapper.PointsMapper
- import test.mlkitl.ml.BarcodeScannerImp
- import test.mlkitl.ml.FaceDetectionImp
- import test.mlkitl.ml.TextRecognitionImp
- import java.util.concurrent.TimeUnit
+import android.app.Activity
+import android.content.Context
+import android.graphics.Color
+import android.graphics.Point
+import android.view.Display
+import android.view.SurfaceView
+import android.view.ViewGroup
+import android.view.WindowManager
+import androidx.lifecycle.Lifecycle
+import com.google.mlkit.vision.barcode.Barcode
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.google.mlkit.vision.text.TextRecognition
+import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.dsl.binds
+import org.koin.dsl.module
+import test.mlkit.LifecycleManager
+import test.mlkit.SwitchOrientationImp
+import test.mlkit.camera.ImageResolutionImp
+import test.mlkit.camera.ImageSourceImp
+import test.mlkit.di.qualifier.QCamera
+import test.mlkit.di.qualifier.QMLManager
+import test.mlkit.di.qualifier.QOrientation
+import test.mlkit.domain.interactor.*
+import test.mlkit.domain.model.CameraFacing
+import test.mlkit.domain.model.Orientation
+import test.mlkit.domain.model.Size
+import test.mlkit.domain.modules.ICameraResolution
+import test.mlkit.domain.modules.IImageSource
+import test.mlkit.domain.modules.ILifecycleObserver
+import test.mlkit.domain.modules.debug.PreviewImageListener
+import test.mlkit.domain.modules.manager.IMLManager
+import test.mlkit.domain.modules.ml.IBarcodeScanner
+import test.mlkit.domain.modules.ml.IFaceDetection
+import test.mlkit.domain.modules.ml.ITextRecognition
+import test.mlkit.manager.MLManagerImp
+import test.mlkit.schedulers.IScheduleProvider
+import test.mlkit.schedulers.ScheduleProviderImp
+import test.mlkit.ui.ViewModel
+import test.mlkit.ui.model.mapper.BitmapMapper
+import test.mlkit.ui.model.mapper.HighLightMapper
+import test.mlkit.ui.model.mapper.PointsMapper
+import test.mlkit.ui.model.mapper.RoiMapper
+import test.mlkitl.ml.BarcodeScannerImp
+import test.mlkitl.ml.FaceDetectionImp
+import test.mlkitl.ml.TextRecognitionImp
+import java.util.concurrent.TimeUnit
 
 const val isPortrait = true
 val orientation = Orientation.PORTRAIT
@@ -207,12 +208,17 @@ val mapperModule = module {
             Color.BLUE,
             Color.GREEN,
             Color.RED,
+            get(),
             get()
         )
     }
 
     single {
         PointsMapper()
+    }
+
+    single {
+        RoiMapper()
     }
 
     single {

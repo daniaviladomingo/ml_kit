@@ -6,6 +6,7 @@ import com.google.mlkit.vision.face.FaceDetector
 import io.reactivex.Single
 import test.mlkit.domain.model.Image
 import test.mlkit.domain.model.Point
+import test.mlkit.domain.model.Roi
 import test.mlkit.domain.model.face.FaceData
 import test.mlkit.domain.modules.ml.IFaceDetection
 
@@ -14,7 +15,13 @@ class FaceDetectionImp(
     private val classificationThreshold: Float
 ) : IFaceDetection {
     override fun detection(image: Image): Single<List<FaceData>> = Single.create { emitter ->
-        val img = InputImage.fromByteArray(image.data, image.width, image.height, image.rotation, InputImage.IMAGE_FORMAT_NV21)
+        val img = InputImage.fromByteArray(
+            image.data,
+            image.width,
+            image.height,
+            image.rotation,
+            InputImage.IMAGE_FORMAT_NV21
+        )
         faceDetector.process(img).addOnSuccessListener { faces ->
             emitter.onSuccess(
                 faces.map { face ->
@@ -24,6 +31,14 @@ class FaceDetectionImp(
                             ?: false,
                         face.leftEyeOpenProbability?.run { this > classificationThreshold }
                             ?: false,
+                        face.boundingBox.run {
+                            Roi(
+                                top.toFloat(),
+                                left.toFloat(),
+                                right.toFloat(),
+                                bottom.toFloat()
+                            )
+                        },
                         face.getContour(FaceContour.FACE)?.points?.map { p -> Point(p.x, p.y) },
                         face.getContour(FaceContour.LEFT_EYE)?.points?.map { p -> Point(p.x, p.y) },
                         face.getContour(FaceContour.RIGHT_EYE)?.points?.map { p ->

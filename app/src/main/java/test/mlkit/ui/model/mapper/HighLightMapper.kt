@@ -8,11 +8,12 @@ import test.mlkit.ui.model.HighLight
 
 class HighLightMapper(
     private val screenSize: Size,
-    private val imageSize: ()->Size,
+    private val imageSize: () -> Size,
     private val color: Int,
     private val colorTrue: Int,
     private val colorFalse: Int,
-    private val pointsMapper: PointsMapper
+    private val pointsMapper: PointsMapper,
+    private val roiMapper: RoiMapper
 ) : Mapper<FaceData, List<HighLight>>() {
     override fun map(model: FaceData): List<HighLight> = model.run {
         val scale = if (imageSize().width < screenSize.width) {
@@ -27,6 +28,9 @@ class HighLightMapper(
         Log.d("aaa", "Image ratio: ${imageSize().ratio()}")
 
         mutableListOf<HighLight>().apply {
+            box.run {
+                add(HighLight(color, roiMapper.map(this.scale(scale))))
+            }
             faceOval?.run { add(HighLight(color, pointsMapper.map(this.map { it.scale(scale) }))) }
             rightEye?.run {
                 add(

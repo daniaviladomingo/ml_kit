@@ -53,8 +53,8 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
         setListener()
         vm.adjustPreview()
 //        vm.readText()
-//        vm.faceDetection()
-        vm.scanBarcode()
+        vm.faceDetection()
+//        vm.scanBarcode()
 
         switch_facing.setOnClickListener {
             vm.switchFacingCamera()

@@ -96,7 +96,7 @@ val appModule = module {
 
     single { TimeUnit.MILLISECONDS }
 
-    single { 200L }
+    single { 250L }
 }
 
 val activityModule = module {

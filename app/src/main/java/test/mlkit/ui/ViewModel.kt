@@ -1,5 +1,6 @@
 package test.mlkit.ui
 
+import android.util.Log
 import test.mlkit.domain.interactor.*
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.ui.model.HighLight
@@ -81,8 +82,8 @@ class ViewModel(
         addDisposable(barcodeScannerUseCase.execute()
             .observeOn(scheduleProvider.ui())
             .subscribeOn(scheduleProvider.computation())
-            .subscribe({ barcodes ->
-                barcodeScannedLiveData.value = barcodes
+            .subscribe({ barcode ->
+                barcodeScannedLiveData.value = barcode
             }) {
                 errorLiveData.value = it.toString()
             })

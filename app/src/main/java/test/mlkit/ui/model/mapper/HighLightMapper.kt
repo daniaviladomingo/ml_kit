@@ -16,27 +16,26 @@ class HighLightMapper(
     private val roiMapper: RoiMapper
 ) : Mapper<FaceData, List<HighLight>>() {
     override fun map(model: FaceData): List<HighLight> = model.run {
-        val scale = if (imageSize().width < screenSize.width) {
-            1 / screenSize.ratio()
-        } else {
-            screenSize.ratio()
-        }
+        val scaleWidth = screenSize.width / imageSize().width.toFloat()
+        val scaleHeight = screenSize.height / imageSize().height.toFloat()
 
-        Log.d("aaa", "Screen size: $screenSize")
-        Log.d("aaa", "Image size: $imageSize")
-        Log.d("aaa", "Screen ratio: ${screenSize.ratio()}")
-        Log.d("aaa", "Image ratio: ${imageSize().ratio()}")
+
+//        Log.d("aaa", "Screen size: $screenSize")
+//        Log.d("aaa", "Image size: ${imageSize()}")
+//        Log.d("aaa", "Screen ratio: ${screenSize.ratio()}")
+//        Log.d("aaa", "Image ratio: ${imageSize().ratio()}")
 
         mutableListOf<HighLight>().apply {
             box.run {
-                add(HighLight(color, roiMapper.map(this.scale(scale))))
+//                Log.d("bbb", "Roi: $this")
+                add(HighLight(color, roiMapper.map(this.scale(scaleWidth, scaleHeight))))
             }
-            faceOval?.run { add(HighLight(color, pointsMapper.map(this.map { it.scale(scale) }))) }
+            faceOval?.run { add(HighLight(color, pointsMapper.map(this.map { it.scale(scaleWidth, scaleHeight) }))) }
             rightEye?.run {
                 add(
                     HighLight(
                         if (isRightEyeOpen) colorTrue else colorFalse,
-                        pointsMapper.map(this.map { it.scale(scale) })
+                        pointsMapper.map(this.map { it.scale(scaleWidth, scaleHeight) })
                     )
                 )
             }
@@ -44,7 +43,7 @@ class HighLightMapper(
                 add(
                     HighLight(
                         if (isLeftEyeOpen) colorTrue else colorFalse,
-                        pointsMapper.map(this.map { it.scale(scale) })
+                        pointsMapper.map(this.map { it.scale(scaleWidth, scaleHeight) })
                     )
                 )
             }
@@ -52,7 +51,7 @@ class HighLightMapper(
                 add(
                     HighLight(
                         if (isSmiling) colorTrue else colorFalse,
-                        pointsMapper.map(this.map { it.scale(scale) })
+                        pointsMapper.map(this.map { it.scale(scaleWidth, scaleHeight) })
                     )
                 )
             }
@@ -60,7 +59,7 @@ class HighLightMapper(
                 add(
                     HighLight(
                         if (isSmiling) colorTrue else colorFalse,
-                        pointsMapper.map(this.map { it.scale(scale) })
+                        pointsMapper.map(this.map { it.scale(scaleWidth, scaleHeight) })
                     )
                 )
             }

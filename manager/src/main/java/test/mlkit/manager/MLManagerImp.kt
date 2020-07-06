@@ -5,6 +5,7 @@ import test.mlkit.domain.model.face.FaceData
 import test.mlkit.domain.modules.IImageSource
 import test.mlkit.domain.modules.ILifecycleObserver
 import test.mlkit.domain.modules.manager.IMLManager
+import test.mlkit.domain.modules.ml.IBarcodeScanner
 import test.mlkit.domain.modules.ml.IFaceDetection
 import test.mlkit.domain.modules.ml.ITextRecognition
 import java.util.concurrent.TimeUnit
@@ -13,6 +14,7 @@ class MLManagerImp(
     private val imageSource: IImageSource,
     private val textRecognition: ITextRecognition,
     private val faceDetection: IFaceDetection,
+    private val barcodeScanner: IBarcodeScanner,
 //    private val imageVisible: IImageVisible,
     private val period: Long,
     private val timeUnit: TimeUnit
@@ -30,6 +32,13 @@ class MLManagerImp(
         .flatMap {
             imageSource.getImage().toObservable().flatMap { image ->
                 faceDetection.detection(image).toObservable()
+            }
+        }
+
+    override fun scanBarcode(): Observable<List<String>> = period()
+        .flatMap {
+            imageSource.getImage().toObservable().flatMap { image ->
+                barcodeScanner.scan(image).toObservable()
             }
         }
 

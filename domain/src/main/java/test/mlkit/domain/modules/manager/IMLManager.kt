@@ -6,4 +6,5 @@ import test.mlkit.domain.model.face.FaceData
 interface IMLManager {
     fun recognizedText(): Observable<String>
     fun faceDetection(): Observable<List<FaceData>>
+    fun scanBarcode(): Observable<List<String>>
 }

@@ -78,12 +78,15 @@ class ImageSourceImp(
     override fun switchFacing() {
         while (true) {
             if (switching.compareAndSet(false, true)) {
+                camera.release()
                 currentFacing = if (currentFacing == CameraFacing.FRONT) {
                     CameraFacing.BACK
                 } else {
                     CameraFacing.FRONT
                 }
                 configureCamera()
+                camera.setPreviewDisplay(surfaceView.holder)
+                camera.startPreview()
                 switching.set(false)
                 break
             }

@@ -5,7 +5,7 @@ import test.mlkit.domain.interactor.type.ObservableUseCase
 import test.mlkit.domain.modules.manager.IMLManager
 
 class TextRecognitionUseCase(
-    private val textRecognitionManager: IMLManager
+    private val mlManager: IMLManager
 ): ObservableUseCase<String> {
-    override fun execute(): Observable<String> = textRecognitionManager.recognizedText()
+    override fun execute(): Observable<String> = mlManager.recognizedText()
 }

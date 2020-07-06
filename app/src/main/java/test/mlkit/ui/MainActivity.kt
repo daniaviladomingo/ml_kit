@@ -53,7 +53,16 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
         setListener()
         vm.adjustPreview()
 //        vm.readText()
-        vm.faceDetection()
+//        vm.faceDetection()
+        vm.scanBarcode()
+
+        switch_facing.setOnClickListener {
+            vm.switchFacingCamera()
+        }
+
+        switch_orientation.setOnClickListener {
+            vm.switchOrientation()
+        }
     }
 
     private fun setListener() {
@@ -77,6 +86,10 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
                     view_highLights.drawHighLight(faceHighLight)
                 }
             }
+        })
+
+        vm.barcodeScannedLiveData.observe(this, Observer { text ->
+            Log.d("aaa", "Barcodes -> $text")
         })
     }
 
@@ -109,8 +122,8 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
 
     override fun onPreviewImage(image: Image) {
         val bitmap = bitmapMapper.map(image)
-        runOnUiThread {
-            preview_image.setImageBitmap(bitmap)
-        }
+//        runOnUiThread {
+//            preview_image.setImageBitmap(bitmap)
+//        }
     }
 }

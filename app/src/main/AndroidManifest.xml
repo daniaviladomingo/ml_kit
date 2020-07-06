@@ -27,9 +27,7 @@
 <!--        &lt;!&ndash; To use multiple models: android:value="face,model2,model3" &ndash;&gt;-->
 
         <activity
-            android:name=".ui.MainActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
+            android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

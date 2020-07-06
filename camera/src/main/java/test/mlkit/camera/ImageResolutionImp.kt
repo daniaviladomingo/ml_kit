@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package test.mlkit.camera
 
 import android.hardware.Camera

@@ -1,10 +1,10 @@
 package test.mlkit.ui
 
-import android.util.Log
 import test.mlkit.domain.interactor.*
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.ui.model.HighLight
 import test.mlkit.ui.model.mapper.HighLightMapper
+import test.mlkit.ui.model.mapper.RoiMapper
 import test.mlkit.util.BaseViewModel
 import test.mlkit.util.SingleLiveEvent
 
@@ -16,6 +16,7 @@ class ViewModel(
     private val faceDetectionUseCase: FaceDetectionUseCase,
     private val barcodeScannerUseCase: BarcodeScannerUseCase,
     private val highLightMapper: HighLightMapper,
+    private val roiMapper: RoiMapper,
     private val scheduleProvider: IScheduleProvider
 ) : BaseViewModel() {
 
@@ -24,7 +25,9 @@ class ViewModel(
     val ratioLiveData = SingleLiveEvent<Float>()
     val textRecognitionLiveData = SingleLiveEvent<String>()
     val faceDetectionLiveData = SingleLiveEvent<List<List<HighLight>>>()
-    val barcodeScannedLiveData = SingleLiveEvent<List<String>>()
+//    val barcodeScannedLiveData = SingleLiveEvent<List<String>>()
+
+    val boundingBoxLiveData = SingleLiveEvent<List<HighLight>>()
 
     fun adjustPreview() {
         addDisposable(getImageRatioUseCase.execute()
@@ -38,7 +41,7 @@ class ViewModel(
 
     }
 
-    fun switchFacingCamera(){
+    fun switchFacingCamera() {
         addDisposable(switchFacingCameraUseCase.execute()
             .observeOn(scheduleProvider.ui())
             .subscribeOn(scheduleProvider.computation())
@@ -47,7 +50,7 @@ class ViewModel(
             })
     }
 
-    fun switchOrientation(){
+    fun switchOrientation() {
         addDisposable(switchOrientationUseCase.execute()
             .observeOn(scheduleProvider.ui())
             .subscribeOn(scheduleProvider.computation())
@@ -72,7 +75,8 @@ class ViewModel(
             .observeOn(scheduleProvider.ui())
             .subscribeOn(scheduleProvider.computation())
             .subscribe({ faces ->
-                faceDetectionLiveData.value = highLightMapper.map(faces)
+                faceDetectionLiveData.value = highLightMapper.map(faces).toMutableList()
+                    .apply { add(roiMapper.map(faces.map { it.box })) }
             }) {
                 errorLiveData.value = it.toString()
             })
@@ -83,7 +87,7 @@ class ViewModel(
             .observeOn(scheduleProvider.ui())
             .subscribeOn(scheduleProvider.computation())
             .subscribe({ barcode ->
-                barcodeScannedLiveData.value = barcode
+                boundingBoxLiveData.value = roiMapper.map(barcode.map { it.box })
             }) {
                 errorLiveData.value = it.toString()
             })

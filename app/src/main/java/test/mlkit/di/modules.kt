@@ -117,7 +117,7 @@ val activityModule = module {
 }
 
 val viewModelModule = module {
-    viewModel { ViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 }
 
 val useCasesModules = module {
@@ -208,7 +208,6 @@ val mapperModule = module {
             Color.BLUE,
             Color.GREEN,
             Color.RED,
-            get(),
             get()
         )
     }
@@ -218,7 +217,11 @@ val mapperModule = module {
     }
 
     single {
-        RoiMapper()
+        RoiMapper(
+            Color.BLUE,
+            get(),
+            getImageSize
+        )
     }
 
     single {

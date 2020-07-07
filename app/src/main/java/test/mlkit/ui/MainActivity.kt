@@ -16,6 +16,7 @@ import org.koin.core.parameter.parametersOf
 import test.mlkit.R
 import test.mlkit.domain.model.Image
 import test.mlkit.domain.modules.debug.PreviewImageListener
+import test.mlkit.ui.model.HighLight
 import test.mlkit.ui.model.mapper.BitmapMapper
 import test.mlkit.util.extension.isPermissionGranted
 import test.mlkit.util.extension.isPermissionsGranted
@@ -53,8 +54,8 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
         setListener()
         vm.adjustPreview()
 //        vm.readText()
-        vm.faceDetection()
-//        vm.scanBarcode()
+//        vm.faceDetection()
+        vm.scanBarcode()
 
         switch_facing.setOnClickListener {
             vm.switchFacingCamera()
@@ -74,6 +75,10 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
             surface_view_container.setRatio(ratio)
         })
 
+        vm.boundingBoxLiveData.observe(this, Observer { boxes ->
+            drawHighLights(boxes)
+        })
+
         vm.textRecognitionLiveData.observe(this, Observer { text ->
             Log.d("aaa", "Texto -> $text")
         })
@@ -83,14 +88,20 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
                 view_highLights.clearHighLight()
             } else {
                 highLightsFace.forEach { faceHighLight ->
-                    view_highLights.drawHighLight(faceHighLight)
+                    drawHighLights(faceHighLight)
                 }
             }
         })
 
-        vm.barcodeScannedLiveData.observe(this, Observer { text ->
-            Log.d("aaa", "Barcodes -> $text")
-        })
+
+    }
+
+    private fun drawHighLights(highLights: List<HighLight>) {
+        if (highLights.isEmpty()) {
+            view_highLights.clearHighLight()
+        } else {
+            view_highLights.drawHighLight(highLights)
+        }
     }
 
     override fun onResume() {

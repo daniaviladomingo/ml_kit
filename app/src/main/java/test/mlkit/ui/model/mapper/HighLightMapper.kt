@@ -1,6 +1,5 @@
 package test.mlkit.ui.model.mapper
 
-import android.util.Log
 import test.mlkit.domain.model.Size
 import test.mlkit.domain.model.face.FaceData
 import test.mlkit.domain.model.mapper.Mapper
@@ -12,8 +11,8 @@ class HighLightMapper(
     private val color: Int,
     private val colorTrue: Int,
     private val colorFalse: Int,
-    private val pointsMapper: PointsMapper,
-    private val roiMapper: RoiMapper
+    private val pointsMapper: PointsMapper
+//    private val roiMapper: RoiMapper
 ) : Mapper<FaceData, List<HighLight>>() {
     override fun map(model: FaceData): List<HighLight> = model.run {
         val scaleWidth = screenSize.width / imageSize().width.toFloat()
@@ -26,10 +25,6 @@ class HighLightMapper(
 //        Log.d("aaa", "Image ratio: ${imageSize().ratio()}")
 
         mutableListOf<HighLight>().apply {
-            box.run {
-//                Log.d("bbb", "Roi: $this")
-                add(HighLight(color, roiMapper.map(this.scale(scaleWidth, scaleHeight))))
-            }
             faceOval?.run { add(HighLight(color, pointsMapper.map(this.map { it.scale(scaleWidth, scaleHeight) }))) }
             rightEye?.run {
                 add(

@@ -1,6 +1,7 @@
 package test.mlkit.manager
 
 import io.reactivex.Observable
+import test.mlkit.domain.model.BarcodeData
 import test.mlkit.domain.model.face.FaceData
 import test.mlkit.domain.modules.IImageSource
 import test.mlkit.domain.modules.ILifecycleObserver
@@ -35,7 +36,7 @@ class MLManagerImp(
             }
         }
 
-    override fun scanBarcode(): Observable<List<String>> = period()
+    override fun scanBarcode(): Observable<List<BarcodeData>> = period()
         .flatMap {
             imageSource.getImage().toObservable().flatMap { image ->
                 barcodeScanner.scan(image).toObservable()

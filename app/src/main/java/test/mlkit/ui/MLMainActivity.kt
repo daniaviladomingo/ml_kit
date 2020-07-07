@@ -17,12 +17,13 @@ import test.mlkit.R
 import test.mlkit.domain.model.Image
 import test.mlkit.domain.modules.debug.PreviewImageListener
 import test.mlkit.ui.model.HighLight
+import test.mlkit.ui.model.MLService
 import test.mlkit.ui.model.mapper.BitmapMapper
 import test.mlkit.util.extension.isPermissionGranted
 import test.mlkit.util.extension.isPermissionsGranted
 import test.mlkit.util.extension.requestPermission
 
-class MainActivity : AppCompatActivity(), PreviewImageListener {
+class MLMainActivity : AppCompatActivity(), PreviewImageListener {
 
     private val surfaceView: SurfaceView by inject()
 
@@ -32,9 +33,14 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
 
     private val vm: ViewModel by viewModel()
 
+    private lateinit var mlService: MLService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mlService = intent.getParcelableExtra(ML_SERVICE)
+            ?: throw IllegalArgumentException("ML Service not set")
 
         lifecycleObserver.run { }
 
@@ -52,10 +58,14 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
 
     private fun init() {
         setListener()
+
         vm.adjustPreview()
-//        vm.readText()
-//        vm.faceDetection()
-        vm.scanBarcode()
+
+        when (mlService) {
+            MLService.TEXT_RECOGNITION -> vm.readText()
+            MLService.FACE_DETECTOR -> vm.faceDetection()
+            MLService.BARCODE_SCANNER -> vm.scanBarcode()
+        }
 
         switch_facing.setOnClickListener {
             vm.switchFacingCamera()
@@ -136,5 +146,9 @@ class MainActivity : AppCompatActivity(), PreviewImageListener {
 //        runOnUiThread {
 //            preview_image.setImageBitmap(bitmap)
 //        }
+    }
+
+    companion object {
+        val ML_SERVICE = "ml.service"
     }
 }

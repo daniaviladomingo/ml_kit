@@ -54,4 +54,3 @@ dependencies {
     // Barcode
     implementation 'com.google.mlkit:barcode-scanning:16.0.0'
 }
-

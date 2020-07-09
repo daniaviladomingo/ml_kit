@@ -16,6 +16,7 @@ import org.koin.core.parameter.parametersOf
 import test.mlkit.R
 import test.mlkit.domain.model.Image
 import test.mlkit.domain.modules.debug.PreviewImageListener
+import test.mlkit.ui.custom.HighLightView
 import test.mlkit.ui.model.HighLight
 import test.mlkit.ui.model.MLService
 import test.mlkit.ui.model.mapper.BitmapMapper
@@ -26,6 +27,7 @@ import test.mlkit.util.extension.requestPermission
 class MLMainActivity : AppCompatActivity(), PreviewImageListener {
 
     private val surfaceView: SurfaceView by inject()
+    private val highLightView: HighLightView by inject()
 
     private val bitmapMapper: BitmapMapper by inject()
 
@@ -43,9 +45,6 @@ class MLMainActivity : AppCompatActivity(), PreviewImageListener {
             ?: throw IllegalArgumentException("ML Service not set")
 
         lifecycleObserver.run { }
-
-        window.decorView.systemUiVisibility =
-            (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -95,32 +94,35 @@ class MLMainActivity : AppCompatActivity(), PreviewImageListener {
 
         vm.faceDetectionLiveData.observe(this, Observer { highLightsFace ->
             if (highLightsFace.isEmpty()) {
-                view_highLights.clearHighLight()
+                highLightView.clearHighLight()
             } else {
                 highLightsFace.forEach { faceHighLight ->
                     drawHighLights(faceHighLight)
                 }
             }
         })
-
-
     }
 
     private fun drawHighLights(highLights: List<HighLight>) {
         if (highLights.isEmpty()) {
-            view_highLights.clearHighLight()
+            highLightView.clearHighLight()
         } else {
-            view_highLights.drawHighLight(highLights)
+            highLightView.drawHighLight(highLights)
         }
     }
 
     override fun onResume() {
         super.onResume()
         surface_view_container.addView(surfaceView)
+        surface_view_container.addView(highLightView)
+
+        window.decorView.systemUiVisibility =
+            (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
     }
 
     override fun onPause() {
         super.onPause()
+        surface_view_container.removeView(highLightView)
         surface_view_container.removeView(surfaceView)
     }
 
@@ -149,6 +151,6 @@ class MLMainActivity : AppCompatActivity(), PreviewImageListener {
     }
 
     companion object {
-        val ML_SERVICE = "ml.service"
+        const val ML_SERVICE = "ml.service"
     }
 }

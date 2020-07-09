@@ -25,7 +25,6 @@ class MLServiceActivity : AppCompatActivity() {
         ml_barcode_scanner.setOnClickListener {
             startActivity(MLService.BARCODE_SCANNER)
         }
-
     }
 
     private fun startActivity(mlService: MLService) {

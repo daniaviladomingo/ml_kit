@@ -3,6 +3,7 @@
 package test.mlkit.camera
 
 import android.hardware.Camera
+import android.os.Handler
 import android.view.Display
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -114,10 +115,6 @@ class ImageSourceImp(
 
             customParameters.setPreviewSize(resolution.width, resolution.height)
 
-            imageRatio(customParameters.previewSize.run {
-                height / width.toFloat()
-            })
-
             if (parameters.isVideoStabilizationSupported) {
                 customParameters.videoStabilization = true
             }
@@ -136,6 +133,10 @@ class ImageSourceImp(
             parameters = customParameters
 
             setDisplayOrientation(rotationDegreesSurface())
+
+            imageRatio(customParameters.previewSize.run {
+                height / width.toFloat()
+            })
         }
     }
 
@@ -245,10 +246,12 @@ class ImageSourceImp(
 
     override fun destroy() {
         surfaceView.holder.removeCallback(surfaceHolderCallback)
-        camera.run {
-            cancelAutoFocus()
-            stopPreview()
-            release()
-        }
+        Handler().postDelayed({
+            camera.run {
+                stopPreview()
+                release()
+            }
+            switching.set(false)
+        }, 200)
     }
 }

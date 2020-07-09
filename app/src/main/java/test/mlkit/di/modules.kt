@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Point
+import android.util.Log
 import android.view.Display
 import android.view.SurfaceView
 import android.view.ViewGroup
@@ -42,6 +43,8 @@ import test.mlkit.manager.MLManagerImp
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.schedulers.ScheduleProviderImp
 import test.mlkit.ui.ViewModel
+import test.mlkit.ui.custom.AdaptableContainerSurfaceView
+import test.mlkit.ui.custom.HighLightView
 import test.mlkit.ui.model.mapper.BitmapMapper
 import test.mlkit.ui.model.mapper.HighLightMapper
 import test.mlkit.ui.model.mapper.PointsMapper
@@ -86,11 +89,11 @@ val appModule = module {
         (get() as Display).getRealSize(screenRealSize)
 
         val lossDimension =
-            (screenRealSize.x) - (screenSize.x) - heightNavigationBar
+            (screenRealSize.y) - (screenSize.y) - heightNavigationBar
 
         Size(
-            screenRealSize.x - lossDimension,
-            screenRealSize.y
+            screenRealSize.x,
+            screenRealSize.y - lossDimension
         )
     }
 
@@ -113,6 +116,10 @@ val activityModule = module {
             orientation,
             activity
         )
+    }
+
+    factory {
+        HighLightView(androidContext())
     }
 }
 

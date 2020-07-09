@@ -14,10 +14,10 @@ class SwitchOrientationImp(
     private var currentOrientation = orientation
 
     override fun switchOrientation() {
-        currentOrientation =
-            if (currentOrientation == Orientation.PORTRAIT) Orientation.LANDSCAPE else Orientation.PORTRAIT
-
-        changeOrientation()
+//        currentOrientation =
+//            if (currentOrientation == Orientation.PORTRAIT) Orientation.LANDSCAPE else Orientation.PORTRAIT
+//
+//        changeOrientation()
     }
 
     override fun create() {
@@ -37,9 +37,9 @@ class SwitchOrientationImp(
     }
 
     private fun changeOrientation() {
-        activity.requestedOrientation = when (currentOrientation) {
-            Orientation.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            Orientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        }
+//        activity.requestedOrientation = when (currentOrientation) {
+//            Orientation.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+//            Orientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+//        }
     }
 }

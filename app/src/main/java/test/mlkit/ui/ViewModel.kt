@@ -1,5 +1,6 @@
 package test.mlkit.ui
 
+import android.util.Log
 import test.mlkit.domain.interactor.*
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.ui.model.HighLight
@@ -76,7 +77,7 @@ class ViewModel(
             .subscribeOn(scheduleProvider.computation())
             .subscribe({ faces ->
                 faceDetectionLiveData.value = highLightMapper.map(faces).toMutableList()
-                    .apply { add(roiMapper.map(faces.map { it.box })) }
+//                    .apply { add(roiMapper.map(faces.map { it.box })) }
             }) {
                 errorLiveData.value = it.toString()
             })

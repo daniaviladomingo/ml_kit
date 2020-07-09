@@ -27,7 +27,7 @@ class ImageResolutionImp(
                 var previewHeight = 0
 
                 parameters.supportedPreviewSizes
-                    .filter { it.height in minHeight..maxHeight }
+                    .filter { (if(isPortrait) it.width else it.height) in minHeight..maxHeight }
                     .apply {
                         this.forEach {
                             val ratio =
@@ -62,7 +62,7 @@ class ImageResolutionImp(
                 var previewHeight = 0
 
                 parameters.supportedPreviewSizes
-                    .filter { it.height in minHeight..maxHeight }
+                    .filter { (if(isPortrait) it.width else it.height) in minHeight..maxHeight }
                     .apply {
                         this.forEach {
                             val ratio =

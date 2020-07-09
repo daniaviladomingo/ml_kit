@@ -11,6 +11,7 @@ import android.view.SurfaceView
 import io.reactivex.Single
 import test.mlkit.domain.model.CameraFacing
 import test.mlkit.domain.model.Image
+import test.mlkit.domain.model.Orientation
 import test.mlkit.domain.model.Size
 import test.mlkit.domain.modules.ICameraResolution
 import test.mlkit.domain.modules.IImageSource
@@ -19,7 +20,7 @@ import test.mlkit.domain.modules.debug.PreviewImageListener
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ImageSourceImp(
-    private val isPortrait: Boolean,
+    private val orientation: Orientation,
     private val surfaceView: SurfaceView,
     private val display: Display,
     private val cameraResolution: ICameraResolution,
@@ -96,7 +97,7 @@ class ImageSourceImp(
 
     override fun ratio(): Single<Float> = Single.create {
         imageRatio = { ratio ->
-            it.onSuccess(if (isPortrait) ratio else 1 / ratio)
+            it.onSuccess(if (orientation == Orientation.PORTRAIT) ratio else 1 / ratio)
         }
     }
 
@@ -107,7 +108,7 @@ class ImageSourceImp(
             val resolution = cameraResolution.getResolution(currentFacing)
 
             imageSize(
-                if (isPortrait) test.mlkit.domain.model.Size(
+                if (orientation == Orientation.PORTRAIT) test.mlkit.domain.model.Size(
                     resolution.height,
                     resolution.width
                 ) else test.mlkit.domain.model.Size(resolution.width, resolution.height)

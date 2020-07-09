@@ -4,6 +4,7 @@ package test.mlkit.camera
 
 import android.hardware.Camera
 import test.mlkit.domain.model.CameraFacing
+import test.mlkit.domain.model.Orientation
 import test.mlkit.domain.model.Size
 import test.mlkit.domain.modules.ICameraResolution
 import java.lang.Exception
@@ -13,7 +14,7 @@ class ImageResolutionImp(
     private val minHeight: Int,
     private val maxHeight: Int,
     private val screenSize: Size,
-    private val isPortrait: Boolean
+    private val orientation: Orientation
 ) : ICameraResolution {
 
     private var backSize: Size? = null
@@ -27,11 +28,11 @@ class ImageResolutionImp(
                 var previewHeight = 0
 
                 parameters.supportedPreviewSizes
-                    .filter { (if(isPortrait) it.width else it.height) in minHeight..maxHeight }
+                    .filter { (if(orientation == Orientation.PORTRAIT) it.width else it.height) in minHeight..maxHeight }
                     .apply {
                         this.forEach {
                             val ratio =
-                                if (isPortrait) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
+                                if (orientation == Orientation.PORTRAIT) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
                             val previewDiff = abs(ratio - screenSize.ratio())
                             if (previewDiff < diff) {
                                 diff = previewDiff
@@ -42,7 +43,7 @@ class ImageResolutionImp(
                     }
                     .filter {
                         val ratio =
-                            if (isPortrait) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
+                            if (orientation == Orientation.PORTRAIT) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
                         screenSize.ratio() == ratio
                     }
                     .run {
@@ -62,11 +63,11 @@ class ImageResolutionImp(
                 var previewHeight = 0
 
                 parameters.supportedPreviewSizes
-                    .filter { (if(isPortrait) it.width else it.height) in minHeight..maxHeight }
+                    .filter { (if(orientation == Orientation.PORTRAIT) it.width else it.height) in minHeight..maxHeight }
                     .apply {
                         this.forEach {
                             val ratio =
-                                if (isPortrait) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
+                                if (orientation == Orientation.PORTRAIT) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
                             val previewDiff = abs(ratio - screenSize.ratio())
                             if (previewDiff < diff) {
                                 diff = previewDiff
@@ -77,7 +78,7 @@ class ImageResolutionImp(
                     }
                     .filter {
                         val ratio =
-                            if (isPortrait) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
+                            if (orientation == Orientation.PORTRAIT) (it.height / it.width.toFloat()) else (it.width / it.height.toFloat())
                         screenSize.ratio() == ratio
                     }
                     .run {

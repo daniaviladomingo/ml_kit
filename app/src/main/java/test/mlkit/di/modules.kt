@@ -54,7 +54,6 @@ import test.mlkitl.ml.FaceDetectionImp
 import test.mlkitl.ml.TextRecognitionImp
 import java.util.concurrent.TimeUnit
 
-const val isPortrait = true
 val orientation = Orientation.PORTRAIT
 
 lateinit var imageSize: Size
@@ -178,7 +177,7 @@ val imageSourceModule = module {
 
     single(QCamera) {
         ImageSourceImp(
-            isPortrait,
+            orientation,
             get(),
             get(),
             get(),
@@ -198,7 +197,7 @@ val imageSourceModule = module {
             720,
             900,
             get(),
-            isPortrait
+            orientation
         )
     }
 }

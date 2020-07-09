@@ -2,10 +2,8 @@ package test.mlkit.ui.custom
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
-import kotlin.math.abs
 
 class AdaptableContainerSurfaceView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -25,8 +23,6 @@ class AdaptableContainerSurfaceView @JvmOverloads constructor(
 
         if (ratio != -1f) {
             val ratioView = width / height.toFloat()
-            Log.d("aaa", "$width / $height")
-            Log.d("aaa", "ratioView: $ratioView, ratio: $ratio")
             if (ratioView != ratio) {
                 when {
                     ratioView < ratio -> {
@@ -43,8 +39,6 @@ class AdaptableContainerSurfaceView @JvmOverloads constructor(
                     }
                 }
             }
-
-            Log.d("aaa", "measureWidth: $measureWidth, measureHeight: $measureHeight")
 
             setMeasuredDimension(width + measureWidth, height + measureHeight)
         } else {

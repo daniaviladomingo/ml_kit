@@ -12,7 +12,9 @@ class RoiMapper(
 ) : Mapper<Roi, HighLight>() {
     override fun map(model: Roi): HighLight {
 
-        val scaleWidth = screenSize.width / imageSize().width.toFloat()
+        val newWidth = imageSize().height * screenSize.ratio()
+
+        val scaleWidth = screenSize.width / newWidth
         val scaleHeight = screenSize.height / imageSize().height.toFloat()
 
         return HighLight(color, model.scale(scaleWidth, scaleHeight).run {

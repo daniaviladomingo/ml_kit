@@ -12,17 +12,12 @@ class HighLightMapper(
     private val colorTrue: Int,
     private val colorFalse: Int,
     private val pointsMapper: PointsMapper
-//    private val roiMapper: RoiMapper
 ) : Mapper<FaceData, List<HighLight>>() {
     override fun map(model: FaceData): List<HighLight> = model.run {
-        val scaleWidth = screenSize.width / imageSize().width.toFloat()
+        val newWidth = imageSize().height * screenSize.ratio()
+
+        val scaleWidth = screenSize.width / newWidth
         val scaleHeight = screenSize.height / imageSize().height.toFloat()
-
-
-//        Log.d("aaa", "Screen size: $screenSize")
-//        Log.d("aaa", "Image size: ${imageSize()}")
-//        Log.d("aaa", "Screen ratio: ${screenSize.ratio()}")
-//        Log.d("aaa", "Image ratio: ${imageSize().ratio()}")
 
         mutableListOf<HighLight>().apply {
             faceOval?.run { add(HighLight(color, pointsMapper.map(this.map { it.scale(scaleWidth, scaleHeight) }))) }

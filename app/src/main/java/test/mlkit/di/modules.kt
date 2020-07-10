@@ -54,7 +54,7 @@ import test.mlkitl.ml.FaceDetectionImp
 import test.mlkitl.ml.TextRecognitionImp
 import java.util.concurrent.TimeUnit
 
-val orientation = Orientation.PORTRAIT
+val orientation = Orientation.LANDSCAPE
 
 lateinit var imageSize: Size
 
@@ -88,12 +88,18 @@ val appModule = module {
         (get() as Display).getRealSize(screenRealSize)
 
         val lossDimension =
-            (screenRealSize.y) - (screenSize.y) - heightNavigationBar
+            (if (orientation == Orientation.PORTRAIT) screenRealSize.y else screenRealSize.x) - (if (orientation == Orientation.PORTRAIT) screenSize.y else screenSize.x) - heightNavigationBar
 
-        Size(
-            screenRealSize.x,
-            screenRealSize.y - lossDimension
-        )
+        if (orientation == Orientation.PORTRAIT)
+            Size(
+                screenRealSize.x,
+                screenRealSize.y - lossDimension
+            )
+        else
+            Size(
+                screenRealSize.x - lossDimension,
+                screenRealSize.y
+            )
     }
 
     single { TimeUnit.MILLISECONDS }
@@ -214,7 +220,8 @@ val mapperModule = module {
             Color.BLUE,
             Color.GREEN,
             Color.RED,
-            get()
+            get(),
+            orientation
         )
     }
 
@@ -226,7 +233,8 @@ val mapperModule = module {
         RoiMapper(
             Color.BLUE,
             get(),
-            getImageSize
+            getImageSize,
+            orientation
         )
     }
 

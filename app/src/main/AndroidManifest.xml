@@ -31,7 +31,7 @@
         <!-- android:value="ocr,face" /> -->
         <!-- &lt;!&ndash; To use multiple models: android:value="face,model2,model3" &ndash;&gt; -->
         <activity
-            android:screenOrientation="portrait"
+            android:screenOrientation="landscape"
             android:name=".ui.MLMainActivity">
             <!--            <intent-filter>-->
             <!--                <action android:name="android.intent.action.MAIN" />-->

@@ -1,6 +1,5 @@
 package test.mlkit.ui.model.mapper
 
-import android.util.Log
 import test.mlkit.domain.model.Orientation
 import test.mlkit.domain.model.Roi
 import test.mlkit.domain.model.Size

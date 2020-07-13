@@ -1,6 +1,5 @@
 package test.mlkit.ui
 
-import android.util.Log
 import test.mlkit.domain.interactor.*
 import test.mlkit.schedulers.IScheduleProvider
 import test.mlkit.ui.model.HighLight
@@ -24,11 +23,12 @@ class ViewModel(
     val errorLiveData = SingleLiveEvent<String>()
 
     val ratioLiveData = SingleLiveEvent<Float>()
-    val textRecognitionLiveData = SingleLiveEvent<String>()
-    val faceDetectionLiveData = SingleLiveEvent<List<List<HighLight>>>()
-//    val barcodeScannedLiveData = SingleLiveEvent<List<String>>()
 
     val boundingBoxLiveData = SingleLiveEvent<List<HighLight>>()
+
+    val textRecognitionLiveData = SingleLiveEvent<String>()
+    val faceDetectionLiveData = SingleLiveEvent<List<HighLight>>()
+    val barcodeScannedLiveData = SingleLiveEvent<List<String>>()
 
     fun adjustPreview() {
         addDisposable(getImageRatioUseCase.execute()
@@ -76,7 +76,14 @@ class ViewModel(
             .observeOn(scheduleProvider.ui())
             .subscribeOn(scheduleProvider.computation())
             .subscribe({ faces ->
-                faceDetectionLiveData.value = highLightMapper.map(faces).toMutableList()
+                val fh = mutableListOf<HighLight>()
+                faces.forEach {
+                    highLightMapper.map(it).forEach { hl ->
+                        fh.add(hl)
+                    }
+                    fh.add(roiMapper.map(it.box))
+                }
+                faceDetectionLiveData.value = fh
 //                    .apply { add(roiMapper.map(faces.map { it.box })) }
             }) {
                 errorLiveData.value = it.toString()
@@ -89,6 +96,7 @@ class ViewModel(
             .subscribeOn(scheduleProvider.computation())
             .subscribe({ barcode ->
                 boundingBoxLiveData.value = roiMapper.map(barcode.map { it.box })
+                barcodeScannedLiveData.value = barcode.map { it.rawValue }
             }) {
                 errorLiveData.value = it.toString()
             })

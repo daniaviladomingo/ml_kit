@@ -54,25 +54,22 @@ class ImageSourceImp(
     }
 
     override fun getImage(): Single<Image> = Single.create {
-        while (true) {
-            if (switching.compareAndSet(false, true)) {
-                camera.setOneShotPreviewCallback { data, camera ->
-                    val previewSize = camera.parameters.previewSize
+        if (switching.compareAndSet(false, true)) {
+            camera.setOneShotPreviewCallback { data, camera ->
+                val previewSize = camera.parameters.previewSize
 
-                    switching.set(false)
+                switching.set(false)
 
-                    val previewImage = Image(
-                        data,
-                        previewSize.width,
-                        previewSize.height,
-                        rotationDegreesImage()
-                    )
+                val previewImage = Image(
+                    data,
+                    previewSize.width,
+                    previewSize.height,
+                    rotationDegreesImage()
+                )
 
-                    previewImageListener().onPreviewImage(previewImage)
+                previewImageListener().onPreviewImage(previewImage)
 
-                    it.onSuccess(previewImage)
-                }
-                break
+                it.onSuccess(previewImage)
             }
         }
     }
@@ -141,19 +138,6 @@ class ImageSourceImp(
         }
     }
 
-    /*
-
-    private fun rotationDegreesSurface(): Int =
-        (getCameraRotation() - displayRotationDegree() + 360) % 360
-
-    private fun rotationDegreesImage(): Int {
-        val degrees = 360 - displayRotationDegree()
-        return ((getCameraRotation() + degrees) % 360)
-    }
-
-     */
-
-
     private fun rotationDegreesSurface(): Int {
         val degrees = displayRotationDegree()
 
@@ -203,33 +187,8 @@ class ImageSourceImp(
         throw IllegalStateException("BACK camera not found")
     }
 
-//    private fun calculateImageVisibleSize(imageSize: Size): Size {
-//        val ratioImage = imageSize.ratio()
-//        val ratioScreen = screenSize.ratio()
-//
-//        val visibleWidth =
-//            if (ratioImage > ratioScreen) {
-//                val widthScaled: Float = screenSize.height * ratioImage
-//                (imageSize.width / (widthScaled / screenSize.width)).toInt()
-//            } else {
-//                imageSize.width
-//            }
-//
-//        val visibleHeight =
-//            if (ratioImage < ratioScreen) {
-//                val heightScaled: Float = screenSize.width / ratioImage
-//                (imageSize.height / (heightScaled / screenSize.height)).toInt()
-//            } else {
-//                imageSize.height
-//            }
-//
-//        return if (portrait) Size(visibleHeight, visibleWidth) else Size(
-//            visibleWidth,
-//            visibleHeight
-//        )
-//    }
-
     override fun create() {
+        switching.set(false)
         configureCamera()
     }
 
@@ -252,7 +211,6 @@ class ImageSourceImp(
                 stopPreview()
                 release()
             }
-            switching.set(false)
-        }, 200)
+        }, 250)
     }
 }

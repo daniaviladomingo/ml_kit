@@ -89,16 +89,20 @@ class MLMainActivity : AppCompatActivity(), PreviewImageListener {
         })
 
         vm.textRecognitionLiveData.observe(this, Observer { text ->
-            Log.d("aaa", "Texto -> $text")
+            Log.d("aaa", "Text: $text")
         })
 
         vm.faceDetectionLiveData.observe(this, Observer { highLightsFace ->
             if (highLightsFace.isEmpty()) {
                 highLightView.clearHighLight()
             } else {
-                highLightsFace.forEach { faceHighLight ->
-                    drawHighLights(faceHighLight)
-                }
+                drawHighLights(highLightsFace)
+            }
+        })
+
+        vm.barcodeScannedLiveData.observe(this, Observer { barcode ->
+            barcode.forEachIndexed { index, s ->
+                Log.d("aaa", "Barcode $index: $s")
             }
         })
     }
